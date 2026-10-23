@@ -1,10 +1,25 @@
-# Default ignored files
-/shelf/
-/workspace.xml
-# Editor-based HTTP Client requests
-/httpRequests/
-# Ignored default folder with query files
-/queries/
-# Datasource local storage ignored files
-/dataSources/
-/dataSources.local.xml
+# Dépendances
+node_modules/
+
+# Builds
+dist/
+.next/
+
+# Variables d'environnement (secrets)
+.env
+.env.*
+!.env.example
+
+# Fichiers du système
+.DS_Store
+
+# Éditeurs
+.idea/
+.vscode/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Fichiers téléversés en local (si tu en stockes pendant le dev)
+uploads/
