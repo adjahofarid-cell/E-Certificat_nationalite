@@ -28,4 +28,123 @@ model Utilisateur {
   role         Role     @default(CITOYEN)
   actif        Boolean  @default(true)
   dateCreation DateTime @default(now())
+
+  demandes       Demande[] @relation("Citoyen")
+  demandesPrises Demande[] @relation("Agent")
+}
+
+enum StatutDemande {
+  BROUILLON
+  EN_ATTENTE_PAIEMENT
+  EN_TRAITEMENT
+  VALIDEE
+  DOCUMENT_GENERE
+  REJETEE
+  ANNULEE
+  EXPIREE
+}
+
+enum TypePiece {
+  IDENTITE
+  ACTE_NAISSANCE
+  DOMICILE
+  PHOTO
+  PARENTS
+}
+
+enum ModePaiement {
+  MOBILE_MONEY
+  VISA
+}
+
+enum StatutPaiement {
+  EN_ATTENTE
+  SUCCES
+  ECHEC
+}
+
+enum StatutDocument {
+  PROJET_GENERE
+  SIGNE_ENREGISTRE
+  REVOQUE
+}
+
+model MotifRejet {
+  id       String    @id @default(uuid())
+  code     String    @unique
+  libelle  String
+  demandes Demande[]
+}
+
+model Demande {
+  id             String        @id @default(uuid())
+  numeroDossier  String?       @unique
+  statut         StatutDemande @default(BROUILLON)
+
+  citoyenId      String
+  citoyen        Utilisateur   @relation("Citoyen", fields: [citoyenId], references: [id])
+  agentId        String?
+  agent          Utilisateur?  @relation("Agent", fields: [agentId], references: [id])
+
+  dateNaissance  DateTime?     @db.Date
+  lieuNaissance  String?
+  nomPere        String?
+  nomMere        String?
+  adresse        String?
+
+  motifRejetId   String?
+  motifRejet     MotifRejet?   @relation(fields: [motifRejetId], references: [id])
+
+  dateCreation   DateTime      @default(now())
+  dateSoumission DateTime?
+  dateMiseAJour  DateTime      @updatedAt
+
+  pieces         PieceJustificative[]
+  paiements      Paiement[]
+  document       Document?
+
+  @@index([citoyenId])
+  @@index([statut])
+}
+
+model PieceJustificative {
+  id          String    @id @default(uuid())
+  demandeId   String
+  demande     Demande   @relation(fields: [demandeId], references: [id], onDelete: Cascade)
+  type        TypePiece
+  nomFichier  String
+  typeMime    String
+  taille      Int
+  cleStockage String
+  dateUpload  DateTime  @default(now())
+
+  @@unique([demandeId, type])
+}
+
+model Paiement {
+  id             String         @id @default(uuid())
+  demandeId      String
+  demande        Demande        @relation(fields: [demandeId], references: [id])
+  montant        Decimal        @db.Decimal(12, 0)
+  devise         String         @default("XAF")
+  mode           ModePaiement
+  statut         StatutPaiement @default(EN_ATTENTE)
+  reference      String         @unique
+  cleIdempotence String         @unique
+  datePaiement   DateTime       @default(now())
+
+  @@index([demandeId])
+}
+
+model Document {
+  id                     String         @id @default(uuid())
+  demandeId              String         @unique
+  demande                Demande        @relation(fields: [demandeId], references: [id])
+  identifiantPublic      String         @unique
+  statut                 StatutDocument @default(PROJET_GENERE)
+  cheminProjet           String
+  cheminSigne            String?
+  hashSigne              String?
+  dateGeneration         DateTime       @default(now())
+  dateEnregistrementSigne DateTime?
 }

@@ -9,6 +9,18 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
     const motDePasse = await bcrypt.hash('Passw0rd!', 10);
 
+    const motifs = [
+        { code: 'PIECE_ILLISIBLE', libelle: 'Pièce illisible' },
+        { code: 'IDENTITE_EXPIREE', libelle: 'Pièce d’identité expirée' },
+        { code: 'DOMICILE_EXPIRE', libelle: 'Justificatif de domicile expiré' },
+        { code: 'INCOHERENCE', libelle: 'Informations incohérentes avec les pièces' },
+        { code: 'PIECE_NON_CONFORME', libelle: 'Pièce manquante ou non conforme' },
+    ];
+
+    for (const m of motifs) {
+        await prisma.motifRejet.upsert({ where: { code: m.code }, update: {}, create: m });
+    }
+
     await prisma.utilisateur.upsert({
         where: { email: 'admin@demo.ga' },
         update: {},
