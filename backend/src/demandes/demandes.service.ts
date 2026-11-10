@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { StatutDemande } from '../../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { BrouillonDto } from '../auth/dto/brouillon.dto';
+import { BrouillonDto } from './dto/brouillon.dto';
 import { verifierTransition } from './transitions';
 
 const STATUTS_ACTIFS: StatutDemande[] = ['BROUILLON', 'EN_ATTENTE_PAIEMENT', 'EN_TRAITEMENT', 'VALIDEE'];

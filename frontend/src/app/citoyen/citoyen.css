@@ -1,0 +1,103 @@
+.citoyen { min-height: 100vh; }
+.citoyen .mono { font-family: ui-monospace, Menlo, Consolas, monospace; }
+
+/* Barre du haut */
+.citoyen .topnav { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 16px 28px; border-bottom: 1px solid var(--border); }
+.citoyen .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.citoyen .brand-mark { width: 24px; height: 24px; border-radius: 6px; background: var(--accent); flex-shrink: 0; }
+.citoyen .brand-name { font-weight: 600; font-size: 15px; color: var(--accent-dark); }
+.citoyen .nav-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.citoyen .account-pill { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px 5px 6px; }
+.citoyen .avatar { width: 22px; height: 22px; border-radius: 50%; background: var(--accent-bg); color: var(--accent-dark); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+.citoyen .demo-box { display: flex; align-items: center; gap: 8px; border: 1px dashed var(--border-strong); border-radius: var(--radius); padding: 5px 10px; font-size: 12px; color: var(--text-muted); }
+.citoyen .demo-box select { border: none; background: none; color: var(--text); font-size: 12.5px; }
+
+/* Barre de progression */
+.citoyen .rail-wrap { padding: 30px 28px 10px; display: flex; justify-content: center; }
+.citoyen .rail { display: flex; align-items: flex-start; width: 100%; max-width: 560px; }
+.citoyen .rail-step { flex: 1; text-align: center; position: relative; }
+.citoyen .rail-line { position: absolute; top: 11px; left: -50%; width: 100%; height: 1px; background: var(--border-strong); z-index: 0; }
+.citoyen .rail-step:first-child .rail-line { display: none; }
+.citoyen .rail-dot { width: 22px; height: 22px; border-radius: 50%; background: var(--bg); border: 1.5px solid var(--border-strong); display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-size: 11px; color: var(--text-muted); position: relative; z-index: 1; }
+.citoyen .rail-label { font-size: 12px; color: var(--text-muted); }
+.citoyen .rail-step.done .rail-dot { background: var(--accent); border-color: var(--accent); color: #fff; }
+.citoyen .rail-step.done .rail-line { background: var(--accent); }
+.citoyen .rail-step.done .rail-label { color: var(--text-secondary); }
+.citoyen .rail-step.current .rail-dot { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.citoyen .rail-step.current .rail-label { color: var(--accent-dark); font-weight: 500; }
+
+/* Contenu */
+.citoyen .wrap { max-width: 600px; margin: 0 auto; padding: 26px 28px 60px; }
+.citoyen .card { border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
+.citoyen .title { font-size: 18px; font-weight: 500; margin: 0 0 8px; }
+.citoyen .sous-titre { font-size: 13.5px; font-weight: 600; margin: 22px 0 10px; }
+.citoyen .desc { color: var(--text-secondary); margin: 0 0 18px; }
+.citoyen .hint { font-size: 12.5px; color: var(--text-muted); margin: 10px 0 0; }
+
+.citoyen .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 12px; font-weight: 500; margin-bottom: 12px; }
+.citoyen .badge.info { background: var(--accent-bg); color: var(--accent-dark); }
+.citoyen .badge.validee { background: var(--green-bg); color: var(--green); }
+.citoyen .badge.rejetee { background: var(--red-bg); color: var(--red); }
+.citoyen .badge.attente { background: var(--amber-bg); color: var(--amber); }
+
+.citoyen .btn { height: 38px; padding: 0 16px; border-radius: var(--radius); font-size: 13.5px; font-weight: 500; border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); }
+.citoyen .btn:hover { background: #fafbfc; }
+.citoyen .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.citoyen .btn.primary:hover { background: #3a63ad; }
+.citoyen .btn.block { width: 100%; }
+.citoyen .lien { display: block; width: 100%; margin-top: 12px; background: none; border: 0; color: var(--text-muted); font-size: 12.5px; text-align: center; }
+
+.citoyen .motif-box { background: var(--red-bg); border-radius: var(--radius); padding: 12px 14px; font-size: 13px; color: var(--red); margin-bottom: 16px; }
+.citoyen .ref-box { display: flex; align-items: center; justify-content: space-between; background: var(--gray-bg); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px; font-size: 13px; }
+
+/* Formulaire */
+.citoyen .grille { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.citoyen .champ:last-child { grid-column: 1 / -1; }
+.citoyen .champ { font-size: 13px; font-weight: 500; }
+.citoyen .champ span { display: block; margin-bottom: 6px; }
+.citoyen .champ input { width: 100%; height: 38px; padding: 0 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 13px; }
+.citoyen .champ input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+@media (max-width: 520px) { .citoyen .grille { grid-template-columns: 1fr; } }
+
+.citoyen .upload-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; }
+.citoyen .upload-row .name { font-size: 13.5px; }
+.citoyen .upload-row .sub { font-size: 12px; color: var(--text-muted); word-break: break-all; }
+.citoyen .upload-row.done { border-color: var(--green-bg); background: var(--green-bg); }
+.citoyen .chip-btn { flex-shrink: 0; cursor: pointer; font-size: 12.5px; padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); }
+.citoyen .chip-btn.attached { background: var(--green); border-color: var(--green); color: #fff; }
+.citoyen .erreur-ligne { color: var(--red); font-size: 12px; margin: -2px 0 8px; }
+.citoyen .erreurs { background: var(--red-bg); color: var(--red); border-radius: var(--radius); padding: 12px 14px; font-size: 13px; margin-top: 14px; }
+.citoyen .erreurs ul { margin: 6px 0 0; padding-left: 18px; }
+.citoyen .actions { display: flex; gap: 10px; margin-top: 18px; }
+.citoyen .actions .btn { flex: 1; }
+
+/* Paiement et suivi */
+.citoyen .tentatives { list-style: none; margin: 0 0 16px; padding: 0; font-size: 12.5px; color: var(--text-secondary); }
+.citoyen .tentatives li { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.citoyen .suivi { list-style: none; padding: 0; margin: 18px 0 0; }
+.citoyen .suivi li { display: flex; gap: 10px; padding-bottom: 16px; position: relative; }
+.citoyen .suivi li:last-child { padding-bottom: 0; }
+.citoyen .suivi li::before { content: ""; position: absolute; left: 6px; top: 16px; bottom: -2px; width: 1px; background: var(--border); }
+.citoyen .suivi li:last-child::before { display: none; }
+.citoyen .suivi-dot { width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--border-strong); background: var(--bg); flex-shrink: 0; margin-top: 1px; z-index: 1; }
+.citoyen .suivi li.done .suivi-dot { background: var(--accent); border-color: var(--accent); }
+.citoyen .suivi li.current .suivi-dot { border-color: var(--accent); }
+.citoyen .suivi li.rejected .suivi-dot { background: var(--red); border-color: var(--red); }
+.citoyen .suivi-label { font-size: 13.5px; }
+.citoyen .suivi li.done .suivi-label { color: var(--text-secondary); }
+.citoyen .suivi li.current .suivi-label, .citoyen .suivi li.rejected .suivi-label { font-weight: 500; }
+.citoyen .suivi li.todo .suivi-label { color: var(--text-muted); }
+.citoyen .infos { margin: 18px 0; }
+.citoyen .infos dt { font-size: 12px; color: var(--text-muted); margin-top: 10px; }
+.citoyen .infos dd { margin: 2px 0 0; font-size: 12.5px; word-break: break-all; }
+
+/* Fenêtre de paiements */
+.citoyen .pay-options { display: flex; gap: 10px; margin-bottom: 16px; }
+.citoyen .pay-opt { flex: 1; border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 12px; text-align: center; font-size: 13px; background: var(--bg); color: var(--text); }
+.citoyen .pay-opt.selected { border-color: var(--accent); background: var(--accent-bg); color: var(--accent-dark); font-weight: 500; }
+.citoyen .overlay { position: fixed; inset: 0; background: rgba(22, 32, 46, 0.28); display: flex; align-items: center; justify-content: center; z-index: 20; padding: 20px; }
+.citoyen .modal { width: 400px; max-width: 100%; background: var(--bg); border-radius: 12px; border: 1px solid var(--border); padding: 24px; }
+.citoyen .modal h2 { font-size: 16px; font-weight: 500; margin: 0 0 14px; }
+.citoyen .toast { position: fixed; bottom: 20px; right: 20px; background: var(--accent-dark); color: #fff; padding: 10px 16px; border-radius: var(--radius); font-size: 13px; z-index: 30; }
+
+.citoyen .btn:disabled { opacity: .6; cursor: default; }

@@ -139,7 +139,7 @@ CREATE UNIQUE INDEX "demande_active_unique"
     ON "Demande"("citoyenId")
     WHERE "statut" IN ('BROUILLON', 'EN_ATTENTE_PAIEMENT', 'EN_TRAITEMENT', 'VALIDEE');
 
--- Un seul paiement validé par demande
+-- Un seul paiements validé par demande
 CREATE UNIQUE INDEX "paiement_valide_unique"
     ON "Paiement"("demandeId")
     WHERE "statut" = 'SUCCES';

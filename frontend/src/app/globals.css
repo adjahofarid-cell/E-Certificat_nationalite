@@ -13,6 +13,12 @@
   --red: #c53030;
   --red-bg: #fbeaea;
   --radius: 8px;
+  --green: #2f855a;
+  --green-bg: #e8f5ee;
+  --amber: #a5680f;
+  --amber-bg: #fbf0dd;
+  --gray: #5b6472;
+  --gray-bg: #eef0f3;
 }
 
 html, body {
@@ -27,7 +33,7 @@ input { font-family: inherit; font-size: 13.5px; }
 
 .brand-center { text-align: center; margin-bottom: 28px; }
 .brand-mark-lg { width: 40px; height: 40px; border-radius: 10px; background: var(--accent); margin: 0 auto 12px; }
-.brand-name { font-weight: 600; font-size: 17px; color: var(--accent-dark); }
+.auth-card .brand-name { font-weight: 600; font-size: 17px; color: var(--accent-dark); }
 
 .tabs { display: flex; border: 1px solid var(--border); border-radius: 8px; padding: 3px; margin-bottom: 22px; }
 .tab { flex: 1; border: none; background: none; padding: 8px 0; border-radius: 6px; font-size: 13px; font-weight: 500; color: var(--text-muted); }
@@ -54,13 +60,15 @@ label.field input:focus { outline: 2px solid var(--accent); outline-offset: 1px;
   padding: 10px 12px; border-radius: var(--radius); margin-bottom: 14px;
 }
 
-.btn {
+.auth-card .btn {
   height: 40px; padding: 0 16px; border-radius: var(--radius); font-size: 13.5px; font-weight: 500;
   border: 1px solid var(--border-strong); background: var(--bg); color: var(--text); width: 100%;
 }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.btn.primary:hover { background: #3a63ad; }
-.btn:disabled { opacity: .6; cursor: default; }
+.auth-card .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.auth-card .btn.primary:hover { background: #3a63ad; }
+.auth-card .btn:disabled { opacity: .6; cursor: default; }
 
 .two-col { display: flex; gap: 10px; }
 .two-col label.field { flex: 1; }
+
+* { box-sizing: border-box; }
