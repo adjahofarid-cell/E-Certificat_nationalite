@@ -22,6 +22,12 @@ async function main() {
     }
 
     await prisma.utilisateur.upsert({
+        where: { email: 'agent2@demo.ga' },
+        update: {},
+        create: { nom: 'Agent', prenom: 'Second', email: 'agent2@demo.ga', motDePasse, role: Role.AGENT },
+    });
+
+    await prisma.utilisateur.upsert({
         where: { email: 'admin@demo.ga' },
         update: {},
         create: {

@@ -97,6 +97,8 @@ model Demande {
 
   dateCreation   DateTime      @default(now())
   dateSoumission DateTime?
+  datePriseEnCharge DateTime?
+  dateDecision      DateTime?
   dateMiseAJour  DateTime      @updatedAt
 
   pieces         PieceJustificative[]

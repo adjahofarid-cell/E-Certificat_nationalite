@@ -1,21 +1,20 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { StatutDemande } from '../../generated/prisma/client';
+import { StatutDemande, TypePiece } from '../../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { verifierTransition } from '../demandes/transitions';
-import { TypePiece } from '../../generated/prisma/client';
 import { StockageService } from '../stockage/stockage.service';
 import { DocumentsService } from '../documents/documents.service';
+import { verifierTransition } from '../demandes/transitions';
 
 // L'agent ne voit que les demandes payées (§2.6).
 const STATUTS_FILE: StatutDemande[] = ['EN_TRAITEMENT', 'VALIDEE', 'REJETEE', 'DOCUMENT_GENERE'];
 
-
-
 @Injectable()
 export class AgentService {
-    constructor(private prisma: PrismaService, private stockage: StockageService, private documents: DocumentsService,) {}
-
-
+    constructor(
+        private prisma: PrismaService,
+        private stockage: StockageService,
+        private documents: DocumentsService,
+    ) {}
 
     file() {
         return this.prisma.demande.findMany({
@@ -40,15 +39,22 @@ export class AgentService {
                 numeroDossier: true,
                 statut: true,
                 dateSoumission: true,
+                datePriseEnCharge: true,
+                dateDecision: true,
                 dateNaissance: true,
                 lieuNaissance: true,
                 nomPere: true,
                 nomMere: true,
                 adresse: true,
-                citoyen: { select: { nom: true, prenom: true, email: true, telephone: true } },
+                citoyen: { select: { nom: true, prenom: true, email: true, telephone: true, dateCreation: true } },
                 agent: { select: { id: true, nom: true, prenom: true } },
                 motifRejet: { select: { libelle: true } },
-                pieces: { select: { type: true, nomFichier: true, typeMime: true, taille: true } },
+                pieces: { select: { type: true, nomFichier: true, typeMime: true, taille: true, dateUpload: true } },
+                paiements: {
+                    where: { statut: 'SUCCES' },
+                    select: { reference: true, mode: true, montant: true, devise: true, datePaiement: true },
+                    take: 1,
+                },
                 document: {
                     select: {
                         statut: true,
@@ -61,7 +67,36 @@ export class AgentService {
             },
         });
         if (!d) throw new NotFoundException('Demande introuvable.');
-        return d;
+
+        // Historique reconstitué à partir des dates enregistrées.
+        const evenements: { libelle: string; date: Date }[] = [];
+        if (d.dateSoumission) evenements.push({ libelle: 'Demande soumise par le citoyen', date: d.dateSoumission });
+        const p = d.paiements[0];
+        if (p) {
+            const mode = p.mode === 'VISA' ? 'Carte VISA' : 'Mobile Money';
+            evenements.push({ libelle: `Paiement confirmé : ${mode}, réf. ${p.reference} (paiement simulé)`, date: p.datePaiement });
+        }
+        if (d.datePriseEnCharge && d.agent) {
+            evenements.push({ libelle: `Prise en charge par ${d.agent.prenom} ${d.agent.nom}`, date: d.datePriseEnCharge });
+        }
+        if (d.dateDecision) {
+            evenements.push({
+                libelle: d.statut === 'REJETEE' ? `Demande rejetée. Motif : ${d.motifRejet?.libelle ?? ''}` : 'Demande validée par l’agent',
+                date: d.dateDecision,
+            });
+        }
+        if (d.document) {
+            evenements.push({ libelle: 'Projet de certificat généré', date: d.document.dateGeneration });
+            if (d.document.dateEnregistrementSigne) {
+                evenements.push({
+                    libelle: 'Document signé enregistré (empreinte SHA-256 calculée)',
+                    date: d.document.dateEnregistrementSigne,
+                });
+            }
+        }
+        evenements.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+        return { ...d, historique: evenements };
     }
 
     motifs() {
@@ -75,10 +110,10 @@ export class AgentService {
         // Une seule requête atomique : si deux agents cliquent en même temps, un seul gagne.
         const res = await this.prisma.demande.updateMany({
             where: { id, statut: 'EN_TRAITEMENT', agentId: null },
-            data: { agentId },
+            data: { agentId, datePriseEnCharge: new Date() },
         });
         if (res.count === 0) {
-            throw new ConflictException('Cette demande n’est plus disponible : elle est déjà prise en charge ou n’est pas en traitement.');
+            throw new ConflictException('Ce dossier n’est plus disponible : un autre agent s’en occupe déjà.');
         }
         return this.detail(id);
     }
@@ -87,7 +122,7 @@ export class AgentService {
         verifierTransition('EN_TRAITEMENT', 'VALIDEE');
         const res = await this.prisma.demande.updateMany({
             where: { id, statut: 'EN_TRAITEMENT', agentId },
-            data: { statut: 'VALIDEE' },
+            data: { statut: 'VALIDEE', dateDecision: new Date() },
         });
         if (res.count === 0) {
             throw new ConflictException('Action impossible : vous devez avoir pris en charge cette demande, qui doit être en traitement.');
@@ -101,7 +136,7 @@ export class AgentService {
         verifierTransition('EN_TRAITEMENT', 'REJETEE');
         const res = await this.prisma.demande.updateMany({
             where: { id, statut: 'EN_TRAITEMENT', agentId },
-            data: { statut: 'REJETEE', motifRejetId: motifId },
+            data: { statut: 'REJETEE', motifRejetId: motifId, dateDecision: new Date() },
         });
         if (res.count === 0) {
             throw new ConflictException('Action impossible : vous devez avoir pris en charge cette demande, qui doit être en traitement.');
@@ -110,7 +145,6 @@ export class AgentService {
     }
 
     async lirePiece(id: string, type: TypePiece) {
-        // Seules les demandes payées sont accessibles à l'agent, comme pour le détail.
         const piece = await this.prisma.pieceJustificative.findFirst({
             where: { type, demande: { id, statut: { in: STATUTS_FILE } } },
             select: { cleStockage: true, typeMime: true, nomFichier: true },
