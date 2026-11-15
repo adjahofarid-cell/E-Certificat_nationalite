@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { StockageService } from '../stockage/stockage.service';
 import { DocumentsService } from '../documents/documents.service';
 import { verifierTransition } from '../demandes/transitions';
+import { AuditService } from '../audit/audit.service';
 
 // L'agent ne voit que les demandes payées (§2.6).
 const STATUTS_FILE: StatutDemande[] = ['EN_TRAITEMENT', 'VALIDEE', 'REJETEE', 'DOCUMENT_GENERE'];
@@ -14,6 +15,7 @@ export class AgentService {
         private prisma: PrismaService,
         private stockage: StockageService,
         private documents: DocumentsService,
+        private audit: AuditService,
     ) {}
 
     file() {
@@ -107,7 +109,6 @@ export class AgentService {
     }
 
     async prendre(id: string, agentId: string) {
-        // Une seule requête atomique : si deux agents cliquent en même temps, un seul gagne.
         const res = await this.prisma.demande.updateMany({
             where: { id, statut: 'EN_TRAITEMENT', agentId: null },
             data: { agentId, datePriseEnCharge: new Date() },
@@ -115,7 +116,9 @@ export class AgentService {
         if (res.count === 0) {
             throw new ConflictException('Ce dossier n’est plus disponible : un autre agent s’en occupe déjà.');
         }
-        return this.detail(id);
+        const d = await this.detail(id);
+        await this.audit.enregistrer('PRISE_EN_CHARGE', { acteurId: agentId, demandeId: id, dossier: d.numeroDossier });
+        return d;
     }
 
     async valider(id: string, agentId: string) {
@@ -127,7 +130,9 @@ export class AgentService {
         if (res.count === 0) {
             throw new ConflictException('Action impossible : vous devez avoir pris en charge cette demande, qui doit être en traitement.');
         }
-        return this.detail(id);
+        const d = await this.detail(id);
+        await this.audit.enregistrer('VALIDATION', { acteurId: agentId, demandeId: id, dossier: d.numeroDossier });
+        return d;
     }
 
     async rejeter(id: string, agentId: string, motifId: string) {
@@ -141,7 +146,14 @@ export class AgentService {
         if (res.count === 0) {
             throw new ConflictException('Action impossible : vous devez avoir pris en charge cette demande, qui doit être en traitement.');
         }
-        return this.detail(id);
+        const d = await this.detail(id);
+        await this.audit.enregistrer('REJET', {
+            acteurId: agentId,
+            demandeId: id,
+            dossier: d.numeroDossier,
+            detail: `Motif : ${motif.libelle}`,
+        });
+        return d;
     }
 
     async lirePiece(id: string, type: TypePiece) {
@@ -160,7 +172,9 @@ export class AgentService {
 
     async genererProjet(id: string, agentId: string) {
         await this.documents.genererProjet(id, agentId);
-        return this.detail(id);
+        const d = await this.detail(id);
+        await this.audit.enregistrer('PROJET_GENERE', { acteurId: agentId, demandeId: id, dossier: d.numeroDossier });
+        return d;
     }
 
     projet(id: string, agentId: string) {
@@ -169,6 +183,13 @@ export class AgentService {
 
     async enregistrerSigne(id: string, agentId: string, fichier: Express.Multer.File | undefined) {
         await this.documents.enregistrerSigne(id, agentId, fichier);
-        return this.detail(id);
+        const d = await this.detail(id);
+        await this.audit.enregistrer('DOCUMENT_SIGNE', {
+            acteurId: agentId,
+            demandeId: id,
+            dossier: d.numeroDossier,
+            detail: `SHA-256 : ${d.document?.hashSigne ?? ''}`,
+        });
+        return d;
     }
 }

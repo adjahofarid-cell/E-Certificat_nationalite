@@ -9,6 +9,7 @@ import { DemandesModule } from './demandes/demandes.module';
 import { DocumentsModule } from './documents/documents.module';
 import { AgentModule } from './agent/agent.module';
 import { PaiementsModule } from './paiements/paiements.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PaiementsModule } from './paiements/paiements.module';
     DocumentsModule,
     AgentModule,
     PaiementsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -149,4 +149,40 @@ model Document {
   hashSigne              String?
   dateGeneration         DateTime       @default(now())
   dateEnregistrementSigne DateTime?
+  motifRevocation        String?
+  dateRevocation         DateTime?
+}
+
+enum ActionAudit {
+  CONNEXION
+  CONNEXION_ECHEC
+  PRISE_EN_CHARGE
+  VALIDATION
+  REJET
+  PROJET_GENERE
+  DOCUMENT_SIGNE
+  AGENT_CREE
+  AGENT_DESACTIVE
+  AGENT_REACTIVE
+}
+
+model Audit {
+  id         String      @id @default(uuid())
+  date       DateTime    @default(now())
+  action     ActionAudit
+  acteurId   String?
+  acteurNom  String?
+  acteurRole Role?
+  demandeId  String?
+  dossier    String?
+  detail     String?
+
+  @@index([date])
+  @@index([action])
+}
+
+model Parametre {
+  cle           String   @id
+  valeur        String
+  dateMiseAJour DateTime @updatedAt
 }

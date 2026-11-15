@@ -1,6 +1,8 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { ActionAudit } from '../../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import { CreerAgentDto } from './dto/creer-agent.dto';
 
 const VUE_AGENT = {
@@ -14,9 +16,11 @@ const VUE_AGENT = {
     _count: { select: { demandesPrises: true } },
 } as const;
 
+const TAILLE_PAGE = 50;
+
 @Injectable()
 export class AdminService {
-    constructor(private prisma: PrismaService) {}
+    constructor(private prisma: PrismaService, private audit: AuditService) {}
 
     agents() {
         return this.prisma.utilisateur.findMany({
@@ -26,13 +30,14 @@ export class AdminService {
         });
     }
 
-    async creerAgent(dto: CreerAgentDto) {
+    async creerAgent(dto: CreerAgentDto, acteurId: string) {
         const existant = await this.prisma.utilisateur.findUnique({ where: { email: dto.email } });
         if (existant) throw new ConflictException('Cet email est déjà utilisé');
 
         const motDePasse = await bcrypt.hash(dto.motDePasse, 10);
+        let agent;
         try {
-            return await this.prisma.utilisateur.create({
+            agent = await this.prisma.utilisateur.create({
                 data: {
                     nom: dto.nom,
                     prenom: dto.prenom,
@@ -47,12 +52,20 @@ export class AdminService {
             if ((e as { code?: string }).code === 'P2002') throw new ConflictException('Cet email est déjà utilisé');
             throw e;
         }
+        await this.audit.enregistrer('AGENT_CREE', {
+            acteurId,
+            detail: `${agent.prenom} ${agent.nom} (${agent.email})`,
+        });
+        return agent;
     }
 
-    async changerStatut(id: string, actif: boolean) {
+    async changerStatut(id: string, actif: boolean, acteurId: string) {
         // Seuls les agents sont gérables ici : impossible de viser un administrateur ou un citoyen.
-        const agent = await this.prisma.utilisateur.findFirst({ where: { id, role: 'AGENT' }, select: { id: true } });
-        if (!agent) throw new NotFoundException('Agent introuvable.');
+        const cible = await this.prisma.utilisateur.findFirst({
+            where: { id, role: 'AGENT' },
+            select: { prenom: true, nom: true, email: true },
+        });
+        if (!cible) throw new NotFoundException('Agent introuvable.');
 
         const liberes = await this.prisma.$transaction(async (tx) => {
             await tx.utilisateur.update({ where: { id }, data: { actif } });
@@ -66,7 +79,30 @@ export class AdminService {
             return r.count;
         });
 
-        const maj = await this.prisma.utilisateur.findUniqueOrThrow({ where: { id }, select: VUE_AGENT });
-        return { agent: maj, liberes };
+        await this.audit.enregistrer(actif ? 'AGENT_REACTIVE' : 'AGENT_DESACTIVE', {
+            acteurId,
+            detail:
+                `${cible.prenom} ${cible.nom} (${cible.email})` +
+                (liberes > 0 ? ` — ${liberes} dossier(s) remis dans la liste commune` : ''),
+        });
+
+        const agent = await this.prisma.utilisateur.findUniqueOrThrow({ where: { id }, select: VUE_AGENT });
+        return { agent, liberes };
+    }
+
+    async journal(action: ActionAudit | undefined, pageBrute: string | undefined) {
+        const page = Math.max(1, parseInt(pageBrute ?? '1', 10) || 1);
+        const where = action ? { action } : {};
+        const [total, lignes] = await Promise.all([
+            this.prisma.audit.count({ where }),
+            this.prisma.audit.findMany({
+                where,
+                orderBy: [{ date: 'desc' }, { id: 'desc' }],
+                skip: (page - 1) * TAILLE_PAGE,
+                take: TAILLE_PAGE,
+                select: { id: true, date: true, action: true, acteurNom: true, acteurRole: true, dossier: true, detail: true },
+            }),
+        ]);
+        return { total, page, taille: TAILLE_PAGE, lignes };
     }
 }
