@@ -21,6 +21,12 @@ async function main() {
         await prisma.motifRejet.upsert({ where: { code: m.code }, update: {}, create: m });
     }
 
+    await prisma.parametre.upsert({
+        where: { cle: 'MONTANT_FRAIS' },
+        update: {},
+        create: { cle: 'MONTANT_FRAIS', valeur: '10000' },
+    });
+
     await prisma.utilisateur.upsert({
         where: { email: 'agent2@demo.ga' },
         update: {},

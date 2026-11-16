@@ -10,6 +10,8 @@ import { DocumentsModule } from './documents/documents.module';
 import { AgentModule } from './agent/agent.module';
 import { PaiementsModule } from './paiements/paiements.module';
 import { AdminModule } from './admin/admin.module';
+import { ParametresModule } from './parametres/parametres.module';
+import { AuditModule } from './audit/audit.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { AdminModule } from './admin/admin.module';
     AgentModule,
     PaiementsModule,
     AdminModule,
+    ParametresModule,
+    AuditModule,
   ],
   controllers: [AppController],
   providers: [AppService],

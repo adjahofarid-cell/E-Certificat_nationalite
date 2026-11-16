@@ -4,12 +4,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { DemandesService } from '../demandes/demandes.service';
 import { verifierTransition } from '../demandes/transitions';
 import { PaiementDto } from './dto/paiement.dto';
+import { ParametresService } from '../parametres/parametres.service';
 
-const MONTANT = 10000;
+
 
 @Injectable()
 export class PaiementsService {
-    constructor(private prisma: PrismaService, private demandes: DemandesService) {}
+    constructor(private prisma: PrismaService, private demandes: DemandesService, private parametres: ParametresService) {}
 
     async payer(citoyenId: string, dto: PaiementDto) {
         // 1. Rejeu : la même clé donne le même résultat, jamais un second paiements.
@@ -18,10 +19,16 @@ export class PaiementsService {
             select: { demande: { select: { citoyenId: true } } },
         });
         if (deja) {
+
             if (deja.demande.citoyenId !== citoyenId) {
                 throw new ConflictException('Clé d’idempotence déjà utilisée.');
             }
             return this.demandes.courante(citoyenId);
+        }
+
+        const montant = await this.parametres.montantFrais();
+        if (dto.montant !== montant) {
+            throw new ConflictException(`Le montant des frais a changé (${montant} XAF). Actualisez la page pour le voir.`);
         }
 
         // 2. La demande à payer : celle du citoyen connecté, jamais un id envoyé par le client.
@@ -37,7 +44,7 @@ export class PaiementsService {
                 await tx.paiement.create({
                     data: {
                         demandeId: demande.id,
-                        montant: MONTANT,
+                        montant: montant,
                         devise: 'XAF',
                         mode: dto.mode,
                         statut: dto.issue,

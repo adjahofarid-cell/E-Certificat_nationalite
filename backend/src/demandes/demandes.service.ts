@@ -35,8 +35,7 @@ const VUE_CITOYEN = {
         select: { reference: true, mode: true, statut: true, datePaiement: true },
         orderBy: { datePaiement: 'asc' },
     },
-    document: { select: { identifiantPublic: true, hashSigne: true } },
-} as const;
+    document: { select: { identifiantPublic: true, hashSigne: true, statut: true } },} as const;
 
 @Injectable()
 export class DemandesService {

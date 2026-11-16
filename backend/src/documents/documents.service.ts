@@ -166,18 +166,39 @@ export class DocumentsService {
             where: { identifiantPublic: identifiant },
             select: {
                 statut: true,
+                hashSigne: true,
                 dateEnregistrementSigne: true,
-                demande: { select: { citoyen: { select: { nom: true, prenom: true } } } },
+                demande: {
+                    select: {
+                        numeroDossier: true,
+                        dateNaissance: true,
+                        lieuNaissance: true,
+                        nomPere: true,
+                        nomMere: true,
+                        adresse: true,
+                        citoyen: { select: { nom: true, prenom: true } },
+                    },
+                },
             },
         });
         // Un simple projet n'est pas un certificat : il reste « non trouvé ».
         if (!doc || doc.statut === 'PROJET_GENERE') return { resultat: 'NON_TROUVE' as const };
+        const d = doc.demande;
+        // Le motif de révocation n'est volontairement pas sélectionné : il n'est pas public (§2.8).
         return {
             resultat: doc.statut === 'REVOQUE' ? ('REVOQUE' as const) : ('VALIDE' as const),
-            apercu: {
+            certificat: {
                 titre: 'Certificat de nationalité',
-                titulaire: `${doc.demande.citoyen.prenom} ${doc.demande.citoyen.nom}`,
+                numeroDossier: d.numeroDossier,
+                prenom: d.citoyen.prenom,
+                nom: d.citoyen.nom,
+                dateNaissance: d.dateNaissance ? d.dateNaissance.toISOString().slice(0, 10) : null,
+                lieuNaissance: d.lieuNaissance,
+                nomPere: d.nomPere,
+                nomMere: d.nomMere,
+                adresse: d.adresse,
                 dateEnregistrement: doc.dateEnregistrementSigne,
+                empreinte: doc.hashSigne,
             },
         };
     }
