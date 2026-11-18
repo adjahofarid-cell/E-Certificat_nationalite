@@ -1,11 +1,15 @@
 # Dépendances
 node_modules/
+jspm_packages/
+bower_components/
 
 # Builds
 dist/
 .next/
+out
+build/Release
 
-# Variables d'environnement (secrets)
+# Variables d'environnement
 .env
 .env.*
 !.env.example
@@ -18,8 +22,79 @@ dist/
 .vscode/
 
 # Logs
+logs
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
-# Fichiers téléversés en local (si tu en stockes pendant le dev)
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage
+coverage
+*.lcov
+.nyc_output
+lib-cov
+
+# Caches
+.cache
+.parcel-cache
+.npm
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+.grunt
+.vite/
+.turbo
+.nx/cache
+.nx/workspace-data
+.nx/migrate-runs
+
+# Fichiers téléversés en local
 uploads/
+
+# Frameworks / tools
+.nuxt
+.output
+.nitro/
+.vuepress/dist
+.temp
+.svelte-kit/
+**/.vitepress/dist
+**/.vitepress/cache
+.docusaurus
+.serverless/
+.fusebox/
+.dynamodb/
+.firebase/
+.tern-port
+.vscode-test
+.astro/
+
+# Package outputs
+*.tgz
+.yarn-integrity
+
+# pnpm
+.pnpm-store
+
+# yarn v3
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# Vite timestamp files
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
